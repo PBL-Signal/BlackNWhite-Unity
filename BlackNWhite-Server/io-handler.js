@@ -36,8 +36,7 @@ const Company = require("./schemas/roomTotal/Company");
 const Section = require("./schemas/roomTotal/Section");
 const Progress = require("./schemas/roomTotal/Progress");
 
-const { createLogger, format, transports } = require('winston');
-require('winston-mongodb');
+const {lobbyLogger, gameLogger} = require('./logConfig'); 
 
 // 자바스크립트는 특정 문자열 인덱스 수정 불가라, 이를 대체하기 위해 가져온 함수
 String.prototype.replaceAt = function(index, replacement) {
@@ -66,37 +65,32 @@ module.exports = (io) => {
     let timerId;
     let pitaTimerId;
 
+    
+    // !! 로그 저장 예시 !!
+    lobbyLogger.error('mainHome:login', {
+        server : 'server1',
+        userIP : '192.0.0.1',
+        sessionID : 'b8dscb35vjm2ki81d5x',
+        userID : 'ucsseqerb14ned321b',
+        nickname : "hyeMin",
+        data : {status : 1} 
+    });
 
-    // const usersLogger = createLogger({
-    //     transports:[
-        
-    //     // File transport
-    //         new transports.File({
-    //         filename: 'logs/server.log',
-    //         format:format.combine(
-    //             format.timestamp({format: 'MMM-DD-YYYY HH:mm:ss'}),
-    //             format.align(),
-    //             format.printf(info => `${info.level}: ${[info.timestamp]}: ${info.message}`),
-    //     )}),
-        
-    //     // MongoDB transport
-    //         new transports.MongoDB({
-    //             level: 'error',
-    //             //mongo database connection link
-    //             db : 'mongodb://localhost:27017/logs',
-    //             options: {
-    //                 useUnifiedTopology: true
-    //             },
-    //             // A collection to save json formatted logs
-    //             collection: 'server_logs',
-    //             format: format.combine(
-    //             format.timestamp(),
-    //             // Convert logs to a json format
-    //             format.json())
-    //         })]
-    //     });
-    //     usersLogger.info('TEST', { session_id: "sdfsd"}, {user_id: "sdfss"});
-    //     usersLogger.error(`Unable to find user:`);
+    gameLogger.info("mainHome:create room", {
+        server : 'server1',
+        userIP : '192.0.0.1',
+        sessionID : 'b8dscb35vjm2ki81d5x',
+        userID : 'ucsseqerb14ned321b',
+        nickname : "hyeMin",
+        data : 	{
+            roomID : "sdfsdfb124gvv",
+            room : "23012", 
+            roomType : "public", 
+            maxPlayer : 5,
+            status : 1,
+      },
+    });
+    
     
     io.use(async (socket, next) => {
         console.log("io.use");

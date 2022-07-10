@@ -1614,40 +1614,42 @@ module.exports = (io) => {
                 roomTotalJson[0][corpName].sections[sectionIdx].vulnActive = true;  // vulnActive 변경
                 await jsonStore.updatejson(roomTotalJson[0], socket.room);
 
-                // 확인
-                var roomTotalJsonA = JSON.parse(await jsonStore.getjson(socket.room));
-                console.log("UPDATE 후에 JSON!!!",roomTotalJsonA[0]);
-                console.log("After black_total_pita!!!", black_total_pita - config.EXPLORE_INFO.pita);
-
-                io.sockets.in(socket.room+'false').emit('Area_VulnActive', corpName, sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
-                // socket.to(socket.room).emit("Area_VulnActive", sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
-                // socket.emit('Area_VulnActive', sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
-
                 io.sockets.in(socket.room+'false').emit('Update Pita', newTotalPita); // 블랙팀
                 // socket.to(socket.room).emit("Load Pita Num", newTotalPita);
-                // socket.emit("Load Pita Num", newTotalPita);   
+                // socket.emit("Load Pita Num", newTotalPita);  
 
-                // [GameLog] 로그 추가 - 사전탐색 로그
-                const blackLogJson = JSON.parse(await jsonStore.getjson(socket.room+":blackLog"));
+                io.sockets.in(socket.room+'false').emit("Discovery Start", corpName, sectionIdx);
 
-                let today = new Date();   
-                let hours = today.getHours(); // 시
-                let minutes = today.getMinutes();  // 분
-                let seconds = today.getSeconds();  // 초
-                let now = hours+":"+minutes+":"+seconds;
+                console.log("취약점timer ", config.EXPLORE_INFO.time);
+                // 타이머 시작
+                setTimeout(async function(){
+                    console.log("취약점timeraa");
+                    io.sockets.in(socket.room+'false').emit('Area_VulnActive', corpName, sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
+                    // socket.to(socket.room).emit("Area_VulnActive", sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
+                    // socket.emit('Area_VulnActive', sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
 
-                var companyIdx =  corpName.charCodeAt(7) - 65;
-                var monitoringLog = {time: now, nickname: socket.nickname, targetCompany: corpName, targetSection: sectionNames[companyIdx][sectionIdx], actionType: "PreDiscovery", detail: "취약점 " +vulnArray[vulnIdx] +"이 발견되었습니다."};
+                    // [GameLog] 로그 추가 - 사전탐색 로그
+                    const blackLogJson = JSON.parse(await jsonStore.getjson(socket.room+":blackLog"));
 
-                blackLogJson[0].push(monitoringLog);
-                await jsonStore.updatejson(blackLogJson[0], socket.room+":blackLog");
-                
-                var logArr = [];
-                logArr.push(monitoringLog);
-                //socket.emit('BlackLog', logArr);
-                //socket.to(socket.room).emit('BlackLog', logArr);
-                io.sockets.in(socket.room+'false').emit('addLog', logArr);
-                console.log("EXPLORE ADD LOG");
+                    let today = new Date();   
+                    let hours = today.getHours(); // 시
+                    let minutes = today.getMinutes();  // 분
+                    let seconds = today.getSeconds();  // 초
+                    let now = hours+":"+minutes+":"+seconds;
+
+                    var companyIdx =  corpName.charCodeAt(7) - 65;
+                    var monitoringLog = {time: now, nickname: socket.nickname, targetCompany: corpName, targetSection: sectionNames[companyIdx][sectionIdx], actionType: "PreDiscovery", detail: "취약점 " +vulnArray[vulnIdx] +"이 발견되었습니다."};
+
+                    blackLogJson[0].push(monitoringLog);
+                    await jsonStore.updatejson(blackLogJson[0], socket.room+":blackLog");
+                    
+                    var logArr = [];
+                    logArr.push(monitoringLog);
+                    //socket.emit('BlackLog', logArr);
+                    //socket.to(socket.room).emit('BlackLog', logArr);
+                    io.sockets.in(socket.room+'false').emit('addLog', logArr);
+                    console.log("EXPLORE ADD LOG");
+                }, config.EXPLORE_INFO.time * 1000);
             }
         });
 

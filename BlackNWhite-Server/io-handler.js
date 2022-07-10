@@ -36,6 +36,9 @@ const Company = require("./schemas/roomTotal/Company");
 const Section = require("./schemas/roomTotal/Section");
 const Progress = require("./schemas/roomTotal/Progress");
 
+const { createLogger, format, transports } = require('winston');
+require('winston-mongodb');
+
 // 자바스크립트는 특정 문자열 인덱스 수정 불가라, 이를 대체하기 위해 가져온 함수
 String.prototype.replaceAt = function(index, replacement) {
     if (index >= this.length) {
@@ -62,6 +65,38 @@ module.exports = (io) => {
 
     let timerId;
     let pitaTimerId;
+
+
+    // const usersLogger = createLogger({
+    //     transports:[
+        
+    //     // File transport
+    //         new transports.File({
+    //         filename: 'logs/server.log',
+    //         format:format.combine(
+    //             format.timestamp({format: 'MMM-DD-YYYY HH:mm:ss'}),
+    //             format.align(),
+    //             format.printf(info => `${info.level}: ${[info.timestamp]}: ${info.message}`),
+    //     )}),
+        
+    //     // MongoDB transport
+    //         new transports.MongoDB({
+    //             level: 'error',
+    //             //mongo database connection link
+    //             db : 'mongodb://localhost:27017/logs',
+    //             options: {
+    //                 useUnifiedTopology: true
+    //             },
+    //             // A collection to save json formatted logs
+    //             collection: 'server_logs',
+    //             format: format.combine(
+    //             format.timestamp(),
+    //             // Convert logs to a json format
+    //             format.json())
+    //         })]
+    //     });
+    //     usersLogger.info('TEST', { session_id: "sdfsd"}, {user_id: "sdfss"});
+    //     usersLogger.error(`Unable to find user:`);
     
     io.use(async (socket, next) => {
         console.log("io.use");

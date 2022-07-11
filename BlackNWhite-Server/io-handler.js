@@ -36,6 +36,8 @@ const Company = require("./schemas/roomTotal/Company");
 const Section = require("./schemas/roomTotal/Section");
 const Progress = require("./schemas/roomTotal/Progress");
 
+const {lobbyLogger, gameLogger} = require('./logConfig'); 
+
 // 자바스크립트는 특정 문자열 인덱스 수정 불가라, 이를 대체하기 위해 가져온 함수
 String.prototype.replaceAt = function(index, replacement) {
     if (index >= this.length) {
@@ -62,6 +64,33 @@ module.exports = (io) => {
 
     let timerId;
     let pitaTimerId;
+
+    
+    // !! 로그 저장 예시 !!
+    lobbyLogger.error('mainHome:login', {
+        server : 'server1',
+        userIP : '192.0.0.1',
+        sessionID : 'b8dscb35vjm2ki81d5x',
+        userID : 'ucsseqerb14ned321b',
+        nickname : "hyeMin",
+        data : {status : 1} 
+    });
+
+    gameLogger.info("mainHome:create room", {
+        server : 'server1',
+        userIP : '192.0.0.1',
+        sessionID : 'b8dscb35vjm2ki81d5x',
+        userID : 'ucsseqerb14ned321b',
+        nickname : "hyeMin",
+        data : 	{
+            roomID : "sdfsdfb124gvv",
+            room : "23012", 
+            roomType : "public", 
+            maxPlayer : 5,
+            status : 1,
+      },
+    });
+    
     
     io.use(async (socket, next) => {
         console.log("io.use");
@@ -1582,40 +1611,42 @@ module.exports = (io) => {
                 roomTotalJson[0][corpName].sections[sectionIdx].vulnActive = true;  // vulnActive 변경
                 await jsonStore.updatejson(roomTotalJson[0], socket.room);
 
-                // 확인
-                var roomTotalJsonA = JSON.parse(await jsonStore.getjson(socket.room));
-                console.log("UPDATE 후에 JSON!!!",roomTotalJsonA[0]);
-                console.log("After black_total_pita!!!", black_total_pita - config.EXPLORE_INFO.pita);
-
-                io.sockets.in(socket.room+'false').emit('Area_VulnActive', corpName, sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
-                // socket.to(socket.room).emit("Area_VulnActive", sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
-                // socket.emit('Area_VulnActive', sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
-
                 io.sockets.in(socket.room+'false').emit('Update Pita', newTotalPita); // 블랙팀
                 // socket.to(socket.room).emit("Load Pita Num", newTotalPita);
-                // socket.emit("Load Pita Num", newTotalPita);   
+                // socket.emit("Load Pita Num", newTotalPita);  
 
-                // [GameLog] 로그 추가 - 사전탐색 로그
-                const blackLogJson = JSON.parse(await jsonStore.getjson(socket.room+":blackLog"));
+                io.sockets.in(socket.room+'false').emit("Discovery Start", corpName, sectionIdx);
 
-                let today = new Date();   
-                let hours = today.getHours(); // 시
-                let minutes = today.getMinutes();  // 분
-                let seconds = today.getSeconds();  // 초
-                let now = hours+":"+minutes+":"+seconds;
+                console.log("취약점timer ", config.EXPLORE_INFO.time);
+                // 타이머 시작
+                setTimeout(async function(){
+                    console.log("취약점timeraa");
+                    io.sockets.in(socket.room+'false').emit('Area_VulnActive', corpName, sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
+                    // socket.to(socket.room).emit("Area_VulnActive", sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
+                    // socket.emit('Area_VulnActive', sectionIdx, roomTotalJson[0][corpName].sections[sectionIdx].vulnActive);
 
-                var companyIdx =  corpName.charCodeAt(7) - 65;
-                var monitoringLog = {time: now, nickname: socket.nickname, targetCompany: corpName, targetSection: sectionNames[companyIdx][sectionIdx], actionType: "PreDiscovery", detail: "취약점 " +vulnArray[vulnIdx] +"이 발견되었습니다."};
+                    // [GameLog] 로그 추가 - 사전탐색 로그
+                    const blackLogJson = JSON.parse(await jsonStore.getjson(socket.room+":blackLog"));
 
-                blackLogJson[0].push(monitoringLog);
-                await jsonStore.updatejson(blackLogJson[0], socket.room+":blackLog");
-                
-                var logArr = [];
-                logArr.push(monitoringLog);
-                //socket.emit('BlackLog', logArr);
-                //socket.to(socket.room).emit('BlackLog', logArr);
-                io.sockets.in(socket.room+'false').emit('addLog', logArr);
-                console.log("EXPLORE ADD LOG");
+                    let today = new Date();   
+                    let hours = today.getHours(); // 시
+                    let minutes = today.getMinutes();  // 분
+                    let seconds = today.getSeconds();  // 초
+                    let now = hours+":"+minutes+":"+seconds;
+
+                    var companyIdx =  corpName.charCodeAt(7) - 65;
+                    var monitoringLog = {time: now, nickname: socket.nickname, targetCompany: corpName, targetSection: sectionNames[companyIdx][sectionIdx], actionType: "PreDiscovery", detail: "취약점 " +vulnArray[vulnIdx] +"이 발견되었습니다."};
+
+                    blackLogJson[0].push(monitoringLog);
+                    await jsonStore.updatejson(blackLogJson[0], socket.room+":blackLog");
+                    
+                    var logArr = [];
+                    logArr.push(monitoringLog);
+                    //socket.emit('BlackLog', logArr);
+                    //socket.to(socket.room).emit('BlackLog', logArr);
+                    io.sockets.in(socket.room+'false').emit('addLog', logArr);
+                    console.log("EXPLORE ADD LOG");
+                }, config.EXPLORE_INFO.time * 1000);
             }
         });
 

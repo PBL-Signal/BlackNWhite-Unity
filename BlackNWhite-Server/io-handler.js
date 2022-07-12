@@ -1661,7 +1661,7 @@ module.exports = (io) => {
             var sectionIdx = data.areaIdx;
 
             // 개발자 로그 - 유지보수(영역 업그레이드) 시도
-            gameLogger.info("DetailCompany:Maintenance attempt", {
+            gameLogger.info("game:Maintenance attempt", {
                 server : 'server1',
                 userIP : '192.0.0.1',
                 sessionID : socket.sessionID,
@@ -1683,7 +1683,7 @@ module.exports = (io) => {
             {
                 socket.emit("Short of Money");
                 // 개발자 로그 - 유지보수(영역 업그레이드) 실패(피타 부족)
-                gameLogger.info("DetailCompany:Maintenance fail", {
+                gameLogger.info("game:Maintenance fail", {
                     server : 'server1',
                     userIP : '192.0.0.1',
                     sessionID : socket.sessionID,
@@ -1706,7 +1706,7 @@ module.exports = (io) => {
                 if(roomTotalJson[0][corpName].sections[sectionIdx].level >= config.MAX_LEVEL){
                     socket.emit("Out of Level");
                     // 개발자 로그 - 유지보수(영역 업그레이드) 실패(최대 레벨)
-                    gameLogger.info("DetailCompany:Maintenance fail", {
+                    gameLogger.info("game:Maintenance fail", {
                         server : 'server1',
                         userIP : '192.0.0.1',
                         sessionID : socket.sessionID,
@@ -1736,7 +1736,7 @@ module.exports = (io) => {
                     io.sockets.in(socket.room+'true').emit('Update Pita', newTotalPita); // 화이트팀
 
                     // 개발자 로그 - 유지보수(영역 업그레이드) 성공
-                    gameLogger.info("DetailCompany:Maintenance success", {
+                    gameLogger.info("game:Maintenance success", {
                         server : 'server1',
                         userIP : '192.0.0.1',
                         sessionID : socket.sessionID,
@@ -1793,7 +1793,7 @@ module.exports = (io) => {
             var vulnIdx =  roomTotalJson[0][corpName].sections[sectionIdx].vuln;
 
             // 개발자 로그 - 취약점 탐색 시도
-            gameLogger.info("DetailCompany:Explore attempt", {
+            gameLogger.info("game:Explore attempt", {
                 server : 'server1',
                 userIP : '192.0.0.1',
                 sessionID : socket.sessionID,
@@ -1815,7 +1815,7 @@ module.exports = (io) => {
                 socket.emit("already done");
 
                 // 개발자 로그 - 취약점 탐색 실패(이미 완료됨)
-                gameLogger.info("DetailCompany:Explore fail", {
+                gameLogger.info("game:Explore fail", {
                     server : 'server1',
                     userIP : '192.0.0.1',
                     sessionID : socket.sessionID,
@@ -1838,7 +1838,7 @@ module.exports = (io) => {
                 socket.emit("Short of Money");
 
                 // 개발자 로그 - 취약점 탐색 실패(피타 부족)
-                gameLogger.info("DetailCompany:Explore fail", {
+                gameLogger.info("game:Explore fail", {
                     server : 'server1',
                     userIP : '192.0.0.1',
                     sessionID : socket.sessionID,
@@ -1889,7 +1889,7 @@ module.exports = (io) => {
                     io.sockets.in(socket.room+'false').emit('addLog', logArr);
 
                     // 개발자 로그 - 취약점 탐색 성공
-                    gameLogger.info("DetailCompany:Explore success", {
+                    gameLogger.info("game:Explore success", {
                         server : 'server1',
                         userIP : '192.0.0.1',
                         sessionID : socket.sessionID,
@@ -3243,7 +3243,7 @@ module.exports = (io) => {
                 io.sockets.in(socket.room).emit('Abandon_Gameover', winTeam, blackScore, whiteScore);
 
                 // 개발자 로그 - 게임 종료(모든 회사 몰락)
-                gameLogger.info("Result:Game Over", {
+                gameLogger.info("game:Game Over", {
                     server : 'server1',
                     userIP : '192.0.0.1',
                     sessionID : socket.sessionID,
@@ -3295,7 +3295,7 @@ module.exports = (io) => {
         io.sockets.in(socket.room).emit('Timeout_Gameover', winTeam, blackScore, whiteScore);
 
         // 개발자 로그 - 게임 종료(시간종료)
-        gameLogger.info("Result:Game Over", {
+        gameLogger.info("game:Game Over", {
             server : 'server1',
             userIP : '192.0.0.1',
             sessionID : socket.sessionID,

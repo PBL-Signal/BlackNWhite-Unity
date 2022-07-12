@@ -2399,52 +2399,57 @@ module.exports = (io) => {
             last  : -1
         })
 
-        var initCompany = new Company({
-            abandonStatus : false,
-            penetrationTestingLV : [1,1,1,1,1,1,1,1,1,1,1,1,1],
-            attackLV : [0,0,0,0,0,0,0,0,0,0,0,0,0],
-            sections : [
-                new Section({
-                    activation : true,
-                    destroyStatus : false ,
-                    level  : 1,
-                    vuln : 0,
-                    vulnActive : false,
-                    attackStep : 0,
-                    successAttackStep : 0,
-                    responseStep : 0,
-                    attack : progress,
-                    response : progress,
-                }),
+        var initCompanyArray = []
+        for (var i = 0; i < 5; i++){
+            var initCompany = new Company({
+                abandonStatus : false,
+                penetrationTestingLV : [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                attackLV : [0,0,0,0,0,0,0,0,0,0,0,0,0],
+                sections : [
+                    new Section({
+                        activation : true,
+                        destroyStatus : false ,
+                        level  : 1,
+                        vuln : Math.floor(Math.random() * 4),
+                        vulnActive : false,
+                        attackStep : 0,
+                        successAttackStep : 0,
+                        responseStep : 0,
+                        attack : progress,
+                        response : progress,
+                    }),
+    
+                    new Section({
+                        activation : false,
+                        destroyStatus  : false ,
+                        level  : 1,
+                        vuln : Math.floor(Math.random() * 4),
+                        vulnActive : false,
+                        attackStep : 0,
+                        successAttackStep : 0,
+                        responseStep : 0,
+                        attack : progress,
+                        response : progress,
+                    }),
+    
+                    new Section({
+                        activation : false,
+                        destroyStatus  : false ,
+                        level  : 1,
+                        vuln : Math.floor(Math.random() * 4),
+                        vulnActive : false,
+                        attackStep : 0,
+                        successAttackStep : 0,
+                        responseStep : 0,
+                        attack : progress,
+                        response : progress,
+                    }),
+                ]
+            });
 
-                new Section({
-                    activation : false,
-                    destroyStatus  : false ,
-                    level  : 1,
-                    vuln : 1,
-                    vulnActive : false,
-                    attackStep : 0,
-                    successAttackStep : 0,
-                    responseStep : 0,
-                    attack : progress,
-                    response : progress,
-                }),
-
-                new Section({
-                    activation : false,
-                    destroyStatus  : false ,
-                    level  : 1,
-                    vuln : 2,
-                    vulnActive : false,
-                    attackStep : 0,
-                    successAttackStep : 0,
-                    responseStep : 0,
-                    attack : progress,
-                    response : progress,
-                }),
-            ]
-        });
-
+            initCompanyArray.push(initCompany);
+            console.log("[Init Game] initCompanyArray : ", initCompanyArray);
+        }
 
         var RoomTotalJson  = {
             roomPin : room_key,
@@ -2458,11 +2463,11 @@ module.exports = (io) => {
                 total_pita : 500,
                 users : whiteUsers
             }),
-            companyA    : initCompany,
-            companyB    : initCompany,
-            companyC    : initCompany,
-            companyD    : initCompany,
-            companyE    : initCompany,
+            companyA    : initCompanyArray[0],
+            companyB    : initCompanyArray[1],
+            companyC    : initCompanyArray[2],
+            companyD    : initCompanyArray[3],
+            companyE    : initCompanyArray[4],
         };
       
         return RoomTotalJson
@@ -2894,6 +2899,26 @@ module.exports = (io) => {
                     socket.emit('OnNeutralization', true);
                     console.log("You are Blocked!!!!");
 
+                    // 공격자 무력화 로그
+                    gameLogger.info("game:blocked black", {
+                        server : 'server1',
+                        userIP : '192.0.0.1',
+                        sessionID : socket.sessionID,
+                        userID : socket.userId,
+                        nickname : socket.nickname,
+                        data : 	{
+                            roomID : "sdfsdfb124gvv",
+                            team : socket.team,
+                            companyName : attackJson.companyName,
+                            section : attackJson.sectionIndex,
+                            attackType : attackJson.attackIndex,
+                            nickname : socket.nickname,
+                            userId : socket.userId,
+                            cost : 0,
+                            totalPita : roomTotalJson[0].whiteTeam.total_pita
+                        },
+                    });
+
                     // [GameLog] 로그 추가 - 무력화(블랙) & 무력화 발견(화이트)로그
                     const blackLogJson = JSON.parse(await jsonStore.getjson(socket.room+":blackLog"));
                     const whiteLogJson = JSON.parse(await jsonStore.getjson(socket.room+":whiteLog"));
@@ -2923,7 +2948,47 @@ module.exports = (io) => {
                     //socket.emit('WhiteLog', logArr);
                     //socket.to(socket.room).emit('WhiteLog', logArr);
                     io.sockets.in(socket.room+'true').emit('addLog', logArr);
+                } else {
+                    // 공격자 경고 로그
+                    gameLogger.info("game:warn black", {
+                        server : 'server1',
+                        userIP : '192.0.0.1',
+                        sessionID : socket.sessionID,
+                        userID : socket.userId,
+                        nickname : socket.nickname,
+                        data : 	{
+                            roomID : "sdfsdfb124gvv",
+                            team : socket.team,
+                            companyName : attackJson.companyName,
+                            section : attackJson.sectionIndex,
+                            attackType : attackJson.attackIndex,
+                            nickname : socket.nickname,
+                            userId : socket.userId,
+                            cost : 0,
+                            totalPita : roomTotalJson[0].whiteTeam.total_pita
+                        },
+                    });
                 }
+            } else {
+                // 공격자 탐지 로그
+                gameLogger.info("game:detect black", {
+                    server : 'server1',
+                    userIP : '192.0.0.1',
+                    sessionID : socket.sessionID,
+                    userID : socket.userId,
+                    nickname : socket.nickname,
+                    data : 	{
+                        roomID : "sdfsdfb124gvv",
+                        team : socket.team,
+                        companyName : attackJson.companyName,
+                        section : attackJson.sectionIndex,
+                        attackType : attackJson.attackIndex,
+                        nickname : socket.nickname,
+                        userId : socket.userId,
+                        cost : 0,
+                        totalPita : roomTotalJson[0].whiteTeam.total_pita
+                    },
+                });
             }
 
             let company_blockedNum = 0;

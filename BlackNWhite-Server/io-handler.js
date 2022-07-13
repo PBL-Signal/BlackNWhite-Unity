@@ -203,10 +203,11 @@ module.exports = (io) => {
             // };
             var permission = await UpdatePermission(room);
             console.log('[socket-isValidRoom] permission: ', permission);
-
+            
             if(permission == 1){
                 console.log('[socket-isValidRoom] UpdatePermission: 1');
                 socket.room = room;
+                socket.roomID  = JSON.parse(await redis_room.getRoomInfo(room)).roomID;
             }
 
             socket.emit('room permission',permission);
@@ -219,6 +220,7 @@ module.exports = (io) => {
                 nickname : socket.nickname,
                 data : {
                     type : 'clickRoom', 
+                    roomID : socket.roomID,
                     room : room,
                     status : permission
               },
@@ -259,7 +261,8 @@ module.exports = (io) => {
                 console.log("@ roomPin  : ", roomPin);
                 
                 socket.room = roomPin;
-                console.log("socket.room", socket.room);
+                socket.roomID  = JSON.parse(await redis_room.getRoomInfo(roomPin)).roomID;
+                console.log("socket.room", socket.room, " socket.roomID ", socket.roomID );
                 socket.emit('enterPublicRoom');
 
                 lobbyLogger.info('mainHome:enter_room', {
@@ -270,6 +273,7 @@ module.exports = (io) => {
                     nickname : socket.nickname,
                     data : {
                         type : 'randomGameStart', 
+                        roomID : socket.roomID,
                         room : roomPin,
                         status : 1
                   },
@@ -297,8 +301,9 @@ module.exports = (io) => {
                 console.log("succesCreateRoom roomPin: " , room_info.roomPin);
             }    
             socket.room = room_info.roomPin;
+            socket.roomID = room_info.roomID;
           
-            console.log("socket.room", socket.room);
+            console.log("socket.room", socket.room, "socket.roomID ", socket.roomID );
             socket.emit('enterPublicRoom');
 
         });
@@ -337,6 +342,8 @@ module.exports = (io) => {
 
             console.log("succesCreateRoom roomPin: " , room_info.roomPin);
             socket.room = room_info.roomPin;
+            socket.roomID = room_info.roomID;
+
 
 
             socket.emit('succesCreateRoom', {
@@ -457,7 +464,7 @@ module.exports = (io) => {
                 nickname : socket.nickname,
                 data : 
                     {
-                        // roomID : "sdfsdfb124gvv" (string),
+                        roomID : socket.roomID,
                         room : room,
                         team: playerInfo.team,
                         color:playerInfo.color,
@@ -515,7 +522,7 @@ module.exports = (io) => {
                 nickname : socket.nickname,
                 data : 
                     {
-                        // roomID : "sdfsdfb124gvv" (string),
+                        roomID : socket.roomID,
                         room : socket.room,
                         team: playerInfo.team,
                         color:playerInfo.color,
@@ -538,14 +545,9 @@ module.exports = (io) => {
                     nickname : socket.nickname,
                     data : 
                         {
-                            readyUserCnt: readyUserCnt
-                            // detail : "teamChange On1",
-                            // // roomID : "sdfsdfb124gvv" (string),
-                            // room : socket.room,
-                            // team: playerInfo.team,
-                            // color:playerInfo.color,
-                            // place : playerInfo.place,
-                            // status: playerInfo.status
+                            readyUserCnt: readyUserCnt,
+                            roomID : socket.roomID,
+                            room : socket.room,
                     },
                 });
 
@@ -605,7 +607,7 @@ module.exports = (io) => {
                 nickname : socket.nickname,
                 data : 
                     {
-                        // roomID : "sdfsdfb124gvv" (string),
+                        roomID : socket.roomID,
                         room : socket.room,
                         team: playerInfo.team,
                         color:playerInfo.color,
@@ -663,7 +665,7 @@ module.exports = (io) => {
                 console.log('check : ', playerJson);
                 socket.broadcast.to(socket.room).emit('updateUI', playerJson);
 
-                lobbyLogger.info('waitingRoom:switch_team ', {
+                lobbyLogger.info('waitingRoom:switch_team_off ', {
                     server : server_ip,
                     userIP : '192.0.0.1',
                     sessionID : socket.sessionID,
@@ -671,8 +673,8 @@ module.exports = (io) => {
                     nickname : socket.nickname,
                     data : 
                         {
-                            detail : "teamChange Off",
-                            // roomID : "sdfsdfb124gvv" (string),
+                            // detail : "teamChange Off",
+                            roomID : socket.roomID,
                             room : socket.room,
                             team: playerInfo.team,
                             color:playerInfo.color,
@@ -740,7 +742,7 @@ module.exports = (io) => {
                     console.log('check : ', teamChangeInfo);
                     io.sockets.in(socket.room).emit('updateTeamChange',teamChangeInfo);
 
-                    lobbyLogger.info('waitingRoom:switch_team ', {
+                    lobbyLogger.info('waitingRoom:switch_team_on1 ', {
                         server : server_ip,
                         userIP : '192.0.0.1',
                         sessionID : socket.sessionID,
@@ -748,8 +750,8 @@ module.exports = (io) => {
                         nickname : socket.nickname,
                         data : 
                             {
-                                detail : "teamChange On1",
-                                // roomID : "sdfsdfb124gvv" (string),
+                                // detail : "teamChange On1",
+                                roomID : socket.roomID,
                                 room : socket.room,
                                 team: playerInfo.team,
                                 color:playerInfo.color,
@@ -807,7 +809,7 @@ module.exports = (io) => {
                         console.log("check mywaitingList : " , mywaitingList);
                         await hashtableStore.updateHashTableField(room, myWaitingField, mywaitingList.join(','), 'roomManage');
                         
-                        lobbyLogger.info('waitingRoom:switch_team ', {
+                        lobbyLogger.info('waitingRoom:switch_team_wait', {
                             server : server_ip,
                             userIP : '192.0.0.1',
                             sessionID : socket.sessionID,
@@ -815,8 +817,8 @@ module.exports = (io) => {
                             nickname : socket.nickname,
                             data : 
                                 {
-                                    detail : "teamChange Wait",
-                                    // roomID : "sdfsdfb124gvv" (string),
+                                    // detail : "teamChange Wait",
+                                    roomID : socket.roomID,
                                     room : socket.room,
                                     team: playerInfo.team,
                                     color:playerInfo.color,
@@ -866,7 +868,7 @@ module.exports = (io) => {
                         // 상대방 socketID로 1:1로 보냄 
                         io.to(matePlayerInfo.socketID).emit('onTeamChangeType2');
 
-                        lobbyLogger.info('waitingRoom:switch_team ', {
+                        lobbyLogger.info('waitingRoom:switch_team_on2_1 ', {
                             server : server_ip,
                             userIP : '192.0.0.1',
                             sessionID : socket.sessionID,
@@ -874,8 +876,8 @@ module.exports = (io) => {
                             nickname : socket.nickname,
                             data : 
                                 {
-                                    detail : "teamChange On2",
-                                    // roomID : "sdfsdfb124gvv" (string),
+                                    // detail : "teamChange On2",
+                                    roomID : socket.roomID,
                                     room : socket.room,
                                     team: playerInfo.team,
                                     color:playerInfo.color,
@@ -893,7 +895,8 @@ module.exports = (io) => {
             socket.team = !socket.team;
             console.log("updateSocketTeam : " ,socket.team);
 
-            lobbyLogger.info('waitingRoom:switch_team ', {
+            var playerInfo = await redis_room.getMember(socket.room, socket.userID);
+            lobbyLogger.info('waitingRoom:switch_team_on2_2 ', {
                 server : server_ip,
                 userIP : '192.0.0.1',
                 sessionID : socket.sessionID,
@@ -901,13 +904,13 @@ module.exports = (io) => {
                 nickname : socket.nickname,
                 data : 
                     {
-                        detail : "teamChange On2",
-                        // roomID : "sdfsdfb124gvv" (string),
+                        // detail : "teamChange On2",
+                        roomID : socket.roomID,
                         room : socket.room,
-                        team: socket.team,
-                        color:socket.color,
-                        // place : socket.place,
-                        // status: socket.status
+                        team: playerInfo.team,
+                        color:playerInfo.color,
+                        place : playerInfo.place,
+                        status: playerInfo.status
                 },
             });
         });
@@ -958,7 +961,7 @@ module.exports = (io) => {
             // socket.broadcast.to(socket.room).emit('onGameStart');  //ver0
             io.sockets.in(socket.room).emit('onGameStart'); // ver1/
 
-            lobbyLogger.info('waitingRoom:game_start', {
+            lobbyLogger.info('waitingRoom:game_start_on', {
                 server : server_ip,
                 userIP : '192.0.0.1',
                 sessionID : socket.sessionID,
@@ -966,14 +969,9 @@ module.exports = (io) => {
                 nickname : socket.nickname,
                 data : 
                     {
-                        // readyUserCnt: readyUserCnt
-                        // detail : "teamChange On1",
-                        // // roomID : "sdfsdfb124gvv" (string),
-                        // room : socket.room,
-                        // team: playerInfo.team,
-                        // color:playerInfo.color,
-                        // place : playerInfo.place,
-                        // status: playerInfo.status
+                        roomID : socket.roomID,
+                        room : socket.room,
+                        team: playerInfo.team,
                 },
             });
         });
@@ -997,14 +995,9 @@ module.exports = (io) => {
                 nickname : socket.nickname,
                 data : 
                     {
-                        // readyUserCnt: readyUserCnt
-                        // detail : "teamChange On1",
-                        // // roomID : "sdfsdfb124gvv" (string),
-                        // room : socket.room,
-                        // team: playerInfo.team,
-                        // color:playerInfo.color,
-                        // place : playerInfo.place,
-                        // status: playerInfo.status
+                        roomID : socket.roomID,
+                        room : socket.room,
+                        team: socket.team,
                 },
             });
         
@@ -1065,7 +1058,7 @@ module.exports = (io) => {
             socket.emit('Visible LimitedTime', socket.team.toString()); // actionbar
 
             // Timer 시작
-            var time = 10; //600=10분, 1분 -> 60
+            var time = 600; //600=10분, 1분 -> 60
             var min = "";
             var sec = "";
 
@@ -1176,44 +1169,119 @@ module.exports = (io) => {
             {
                 console.log("무력화 상태 아님!");
                 socket.emit('After non-Neutralization', false);
+                
+                gameLogger.info("game:neutralization_attempt", {
+                    server : 'server1',
+                    userIP : '192.0.0.1',
+                    sessionID : socket.sessionID,
+                    userID : socket.userId,
+                    nickname : socket.nickname,
+                    data : 	{
+                        roomID : socket.roomID,
+                        team : socket.team,
+                        companyName : company,
+                        IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
+                        state : 0,
+                        cost :0,
+                        totalPita : black_total_pita
+                    },
+                });
             }else{
                 // 가격화 
                 if (black_total_pita - config.UNBLOCK_INFO.pita < 0){
                     console.log("무력화 해제 실패!");
                     socket.emit('After non-Neutralization', false);
+                    gameLogger.info("game:neutralization_attempt", {
+                        server : 'server1',
+                        userIP : '192.0.0.1',
+                        sessionID : socket.sessionID,
+                        userID : socket.userId,
+                        nickname : socket.nickname,
+                        data : 	{
+                            roomID : socket.roomID,
+                            team : socket.team,
+                            companyName : company,
+                            IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
+                            state : -1,
+                            cost :0,
+                            totalPita : black_total_pita
+                        },
+                    });
                 }
                 else{
-                    // isBlocked 해제
-                    roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked = false;
                     // pita 가격 마이너스
                     roomTotalJson[0].blackTeam.total_pita = black_total_pita - config.UNBLOCK_INFO.pita;
-                    
                     await jsonStore.updatejson(roomTotalJson[0], socket.room);
                     io.sockets.in(socket.room+'false').emit('Update Pita', roomTotalJson[0].blackTeam.total_pita );
-
-                    console.log("무력화 해제 성공!");
                     socket.emit('After non-Neutralization', true);
 
-                    // [GameLog] 로그 추가 - 무력화 해제 로그
-                    const blackLogJson = JSON.parse(await jsonStore.getjson(socket.room+":blackLog"));
+                    gameLogger.info("game:neutralization_attempt", {
+                        server : 'server1',
+                        userIP : '192.0.0.1',
+                        sessionID : socket.sessionID,
+                        userID : socket.userID,
+                        nickname : socket.nickname,
+                        data : 	{
+                            roomID : socket.roomID,
+                            team : socket.team,
+                            companyName : company,
+                            IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
+                            state : 1,
+                            cost : config.UNBLOCK_INFO.pita,
+                            totalPita :roomTotalJson[0].blackTeam.total_pita 
+                        },
+                    });
+                 
+                    
+                    setTimeout(async function(){
+                        //  json 불러와서 해당 영역 회사 경고 초기화 함 
+                        roomTotalJson = JSON.parse(await jsonStore.getjson(socket.room));
+                        // console.log("[setTimeout] JSON!!!",roomTotalJson);
 
-                    let today = new Date();   
-                    let hours = today.getHours(); // 시
-                    let minutes = today.getMinutes();  // 분
-                    let seconds = today.getSeconds();  // 초
-                    let now = hours+":"+minutes+":"+seconds;
-                    var monitoringLog = {time: now, nickname: socket.nickname, targetCompany: company, targetSection: "", actionType: "Neutralization", detail: socket.nickname+"무력화 해제되었습니다."};
+                        // isBlocked 해제
+                        roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked = false;
+                        await jsonStore.updatejson(roomTotalJson[0], socket.room);
 
-                    blackLogJson[0].push(monitoringLog);
-                    await jsonStore.updatejson(blackLogJson[0], socket.room+":blackLog");
+                        console.log("무력화 해제 성공!");
 
-                    var logArr = [];
-                    logArr.push(monitoringLog);
-                    // socket.emit('BlackLog', logArr);
-                    // socket.to(socket.room).emit('BlackLog', logArr);
-                    io.sockets.in(socket.room+'false').emit('addLog', logArr);
-                    console.log("무력화 해제 성공!");
-                    socket.emit('After non-Neutralization', true);
+                        // [GameLog] 로그 추가 - 무력화 해제 로그
+                        const blackLogJson = JSON.parse(await jsonStore.getjson(socket.room+":blackLog"));
+
+                        let today = new Date();   
+                        let hours = today.getHours(); // 시
+                        let minutes = today.getMinutes();  // 분
+                        let seconds = today.getSeconds();  // 초
+                        let now = hours+":"+minutes+":"+seconds;
+                        var monitoringLog = {time: now, nickname: socket.nickname, targetCompany: company, targetSection: "", actionType: "Neutralization", detail: socket.nickname+"무력화 해제되었습니다."};
+
+                        blackLogJson[0].push(monitoringLog);
+                        await jsonStore.updatejson(blackLogJson[0], socket.room+":blackLog");
+
+                        var logArr = [];
+                        logArr.push(monitoringLog);
+                        // socket.emit('BlackLog', logArr);
+                        // socket.to(socket.room).emit('BlackLog', logArr);
+                        io.sockets.in(socket.room+'false').emit('addLog', logArr);
+                        console.log("무력화 해제 성공!");          
+
+                        gameLogger.info("game:neutralization_success", {
+                        server : 'server1',
+                        userIP : '192.0.0.1',
+                        sessionID : socket.sessionID,
+                        userID : socket.userID,
+                        nickname : socket.nickname,
+                        data : 	{
+                            roomID : socket.roomID,
+                            team : socket.team,
+                            companyName : company,
+                            IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
+                            state : 1,
+                            cost : config.UNBLOCK_INFO.pita,
+                            totalPita :roomTotalJson[0].blackTeam.total_pita 
+                        },
+                    });          
+                    }, 10000); // 10초
+
                 }
             }
         });
@@ -2382,9 +2450,20 @@ module.exports = (io) => {
             clearInterval(pitaTimerId);
             console.log("[disconnect] 타이머 종료!");
 
+            
             if (socket.room){
                 await leaveRoom(socket, socket.room);
             }
+            
+            lobbyLogger.info('mainHome:logout', {
+                server : server_ip,
+                userIP : '192.0.0.1',
+                sessionID : socket.sessionID,
+                userID : socket.userID,
+                nickname : socket.nickname,
+                data : {status : 1} 
+            });
+
             await sessionStore.deleteSession(socket.sessionID);
         });
     })
@@ -2594,6 +2673,18 @@ module.exports = (io) => {
     
             // 4. (join삭제) 
             socket.leave(roomPin);
+
+            lobbyLogger.info('mainHome:delete_room', {
+                server : server_ip,
+                userIP : '192.0.0.1',
+                sessionID : socket.sessionID,
+                userID : socket.userID,
+                nickname : socket.nickname,
+                data :  {
+                    roomID : socket.roomID,
+                    room : socket.room,
+                }
+            });
         }
         else{  // 나중에 if에 return 추가해서 else는 없애주기 
             // 1) roomManage room 인원 수정
@@ -2700,12 +2791,25 @@ module.exports = (io) => {
                 await listStore.rpushList(redisroomKey, roomPin, false, 'roomManage');
                 console.log("roomManage의 list에 추가됨");
             }
-            
+
         }
         
+        lobbyLogger.info('mainHome:leave_room', {
+            server : server_ip,
+            userIP : '192.0.0.1',
+            sessionID : socket.sessionID,
+            userID : socket.userID,
+            nickname : socket.nickname,
+            data :  {
+                roomID : socket.roomID,
+                room : socket.room,
+            }
+        });
+    
 
         // 5. 나머지 room 관련 정보 socket에서 삭제 및 빈 값으로 수정해주기!!
        socket.room = null;
+       socket.roomID = null;
        socket.team = null;
        socket.color = null;
     };

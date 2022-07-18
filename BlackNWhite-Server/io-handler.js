@@ -3667,7 +3667,7 @@ module.exports = (io) => {
                     },
                 });
 
-                // await SaveDeleteGameInfo(socket.room);
+                await SaveDeleteGameInfo(socket.room);
             });
         }
     }
@@ -3724,7 +3724,7 @@ module.exports = (io) => {
             },
         });
 
-        // await SaveDeleteGameInfo(socket.room);
+        await SaveDeleteGameInfo(socket.room);
     }   
 
   // 게임 종료시 게임 정보와 룸 정보를 mongoDB에 저장 후 redis에서 삭제
@@ -3762,11 +3762,11 @@ module.exports = (io) => {
     // roomInfo 정보
     var roomInfo = JSON.parse(await redis_room.getRoomInfo(roomPin));
     console.log('!!!~~roomInfo', roomInfo);
-    var roomInfoScm = new RoomInfo(roomInfo[0]);
+    var roomInfoScm = new RoomInfo(roomInfo);
     console.log('!!!~~roomInfoScm', roomInfoScm);
 
     // 합치기 
-    var roomTotalScm = new RoomTotalSchema({
+    var roomTotalScm = new RoomInfoTotal({
         Users :roomMembersDict, 
         Info : roomInfoScm
     });

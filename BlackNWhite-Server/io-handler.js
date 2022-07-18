@@ -1071,7 +1071,7 @@ module.exports = (io) => {
 
             // 게임 시간 타이머 
             io.sockets.in(socket.room).emit('Timer START');
-            timerId = setInterval(function(){
+            timerId = setInterval(async function(){
                 min = parseInt(time/60);
                 sec = time%60;
                 // console.log("TIME : " + min + "분 " + sec + "초");
@@ -1083,8 +1083,9 @@ module.exports = (io) => {
                     clearInterval(pitaTimerId);
 
                     // 게임종료 -> 점수 계산 함수 호출
+                    let roomTotalJsonFinal = JSON.parse(await jsonStore.getjson(socket.room));
                     io.sockets.in(socket.room).emit('Load_ResultPage');
-                    socket.on('Finish_Load_ResultPage', ()=> { TimeOverGameOver(socket, roomTotalJson); });               
+                    socket.on('Finish_Load_ResultPage', ()=> { TimeOverGameOver(socket, roomTotalJsonFinal); });               
                     
                 }
             }, 1000);
@@ -3317,7 +3318,7 @@ module.exports = (io) => {
             let seconds = today.getSeconds();  // 초
             let now = hours+":"+minutes+":"+seconds;
             var companyIdx =  attackJson.companyName.charCodeAt(7) - 65;
-            var monitoringLog = {time: now, nickname: "", targetCompany: attackJson.companyName, targetSection: sectionNames[companyIdx][attackJson.sectionIndex], actionType: "Detected", detail: attack_name_list[delIndex]+"공격이 탐지 되었습니다."};
+            var monitoringLog = {time: now, nickname: "", targetCompany: attackJson.companyName, targetSection: sectionNames[companyIdx][attackJson.sectionIndex], actionType: "Detected", detail: attack_name_list[attackJson.attackIndex]+"공격이 탐지 되었습니다."};
 
             whiteLogJson[0].push(monitoringLog);
             await jsonStore.updatejson(whiteLogJson[0], socket.room+":whiteLog");
@@ -3686,6 +3687,7 @@ module.exports = (io) => {
         // 남은 피타
         var blackPitaNum = roomTotalJson[0]["blackTeam"]["total_pita"];
         var whitePitaNum = roomTotalJson[0]["whiteTeam"]["total_pita"];
+
 
         // 화이트팀 : (남은 회사 * 1000) + 남은 피타    // 블랙팀 : (파괴한 회사 * 1000) + 남은 피타
         var whiteScore = (aliveCnt * 1000) + whitePitaNum;

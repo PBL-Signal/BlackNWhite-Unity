@@ -1163,16 +1163,20 @@ module.exports = (io) => {
             console.log("[On] Solve Neutralization company :", company);
           
             //  json 불러와서 해당 영역 회사 경고 초기화 함 
-            var roomTotalJson = JSON.parse(await jsonStore.getjson(socket.room));
-            console.log("JSON!!!",roomTotalJson);
+            let roomTotalJson = JSON.parse(await jsonStore.getjson(socket.room));
+            console.log("JSN!!!",roomTotalJson[0]);
             
             var black_total_pita = roomTotalJson[0].blackTeam.total_pita;
             console.log("blackTeam.total_pita!!!", black_total_pita );
 
-
+            
             // 무력화 상태인지 확인
             var companyIsBlocked = roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked;
             console.log("!-- companyIsBlocked : ", companyIsBlocked);
+
+            roomTotalJson[0].blackTeam.total_pita = parseInt(roomTotalJson[0].blackTeam.total_pita) - parseInt(config.UNBLOCK_INFO.pita);
+            console.log("roomTotalJson[0].blackTeam.total_pita!!", roomTotalJson[0].blackTeam.total_pita);
+            
             if (!companyIsBlocked)
             {
                 console.log("무력화 상태 아님!");
@@ -1194,192 +1198,126 @@ module.exports = (io) => {
                         totalPita : black_total_pita
                     },
                 });
-            }else{
-                // 가격화 
-                if (black_total_pita - config.UNBLOCK_INFO.pita < 0){
-                    console.log("무력화 해제 실패!");
-                    socket.emit('After non-Neutralization', false);
-                    gameLogger.info("game:neutralization_attempt", {
-                        server : 'server1',
-                        userIP : '192.0.0.1',
-                        sessionID : socket.sessionID,
-                        userID : socket.userId,
-                        nickname : socket.nickname,
-                        data : 	{
-                            roomID : socket.roomID,
-                            team : socket.team,
-                            companyName : company,
-                            IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
-                            state : -1,
-                            cost :0,
-                            totalPita : black_total_pita
-                        },
-                    });
-                }
-                else{
-                    // pita 가격 마이너스
-                    roomTotalJson[0].blackTeam.total_pita = black_total_pita - config.UNBLOCK_INFO.pita;
-                    await jsonStore.updatejson(roomTotalJson[0], socket.room);
-                    io.sockets.in(socket.room+'false').emit('Update Pita', roomTotalJson[0].blackTeam.total_pita );
-                    socket.emit('After non-Neutralization', true);
-
-                    gameLogger.info("game:neutralization_attempt", {
-                        server : 'server1',
-                        userIP : '192.0.0.1',
-                        sessionID : socket.sessionID,
-                        userID : socket.userID,
-                        nickname : socket.nickname,
-                        data : 	{
-                            roomID : socket.roomID,
-                            team : socket.team,
-                            companyName : company,
-                            IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
-                            state : 1,
-                            cost : config.UNBLOCK_INFO.pita,
-                            totalPita :roomTotalJson[0].blackTeam.total_pita 
-                        },
-                    });
-                 
-                    
-                    setTimeout(async function(){
-                        //  json 불러와서 해당 영역 회사 경고 초기화 함 
-                        roomTotalJson = JSON.parse(await jsonStore.getjson(socket.room));
-                        // console.log("[setTimeout] JSON!!!",roomTotalJson);
-
-                        // isBlocked 해제
-                        roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked = false;
-                        await jsonStore.updatejson(roomTotalJson[0], socket.room);
-
-                        console.log("무력화 해제 성공!");
-
-                        // [GameLog] 로그 추가 - 무력화 해제 로그
-                        const blackLogJson = JSON.parse(await jsonStore.getjson(socket.room+":blackLog"));
-
-                        let today = new Date();   
-                        let hours = today.getHours(); // 시
-                        let minutes = today.getMinutes();  // 분
-                        let seconds = today.getSeconds();  // 초
-                        let now = hours+":"+minutes+":"+seconds;
-                        var monitoringLog = {time: now, nickname: socket.nickname, targetCompany: company, targetSection: "", actionType: "Neutralization", detail: socket.nickname+"무력화 해제되었습니다."};
-
-                        blackLogJson[0].push(monitoringLog);
-                        await jsonStore.updatejson(blackLogJson[0], socket.room+":blackLog");
-
-                        var logArr = [];
-                        logArr.push(monitoringLog);
-                        // socket.emit('BlackLog', logArr);
-                        // socket.to(socket.room).emit('BlackLog', logArr);
-                        io.sockets.in(socket.room+'false').emit('addLog', logArr);
-                        console.log("무력화 해제 성공!");          
-
-                        gameLogger.info("game:neutralization_success", {
-                        server : 'server1',
-                        userIP : '192.0.0.1',
-                        sessionID : socket.sessionID,
-                        userID : socket.userID,
-                        nickname : socket.nickname,
-                        data : 	{
-                            roomID : socket.roomID,
-                            team : socket.team,
-                            companyName : company,
-                            IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
-                            state : 1,
-                            cost : config.UNBLOCK_INFO.pita,
-                            totalPita :roomTotalJson[0].blackTeam.total_pita 
-                        },
-                    });          
-                    }, 10000); // 10초
-
-                   
-                    let roomTotalJson = JSON.parse(await jsonStore.getjson(socket.room));
-                    let company_blockedNum = 0;
+                return 
+            }
         
-                    for (var userId in roomTotalJson[0]["blackTeam"]["users"]){
-                        console.log("[On Monitoring] user id : ", userId);
-                        if (roomTotalJson[0]["blackTeam"]["users"][userId][company]["IsBlocked"] == true){
-                            company_blockedNum += 1;
-                        }
-                    }
+            // 가격화 
+            if (parseInt(black_total_pita) - parseInt(config.UNBLOCK_INFO.pita) < 0){
+                console.log("무력화 해제 실패!");
+                socket.emit('After non-Neutralization', false);
+                gameLogger.info("game:neutralization_attempt", {
+                    server : 'server1',
+                    userIP : '192.0.0.1',
+                    sessionID : socket.sessionID,
+                    userID : socket.userId,
+                    nickname : socket.nickname,
+                    data : 	{
+                        roomID : socket.roomID,
+                        team : socket.team,
+                        companyName : company,
+                        IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
+                        state : -1,
+                        cost :0,
+                        totalPita : black_total_pita
+                    },
+                });
+                return 
+            }
         
-                    console.log("[On Monitoring] company_blockedNum : ", company_blockedNum);
-                
-                    socket.to(socket.room+'true').emit("Blocked Num", company_blockedNum);
-                    socket.emit('Blocked Num', company_blockedNum);
+  
+            // pita 가격 마이너스
+            roomTotalJson[0].blackTeam.total_pita = parseInt(roomTotalJson[0].blackTeam.total_pita) - parseInt(config.UNBLOCK_INFO.pita);
             
+            await jsonStore.updatejson(roomTotalJson[0], socket.room);
+            io.sockets.in(socket.room+'false').emit('Update Pita', roomTotalJson[0].blackTeam.total_pita );
+            socket.emit('After non-Neutralization', true);
 
+            gameLogger.info("game:neutralization_attempt", {
+                server : 'server1',
+                userIP : '192.0.0.1',
+                sessionID : socket.sessionID,
+                userID : socket.userID,
+                nickname : socket.nickname,
+                data : 	{
+                    roomID : socket.roomID,
+                    team : socket.team,
+                    companyName : company,
+                    IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
+                    state : 1,
+                    cost : config.UNBLOCK_INFO.pita,
+                    totalPita :roomTotalJson[0].blackTeam.total_pita 
+                },
+            });
+            
+            
+            setTimeout(async function(){
+                //  json 불러와서 해당 영역 회사 경고 초기화 함 
+                roomTotalJson = JSON.parse(await jsonStore.getjson(socket.room));
+                // console.log("[setTimeout] JSON!!!",roomTotalJson);
+
+                // isBlocked 해제
+                roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked = false;
+                await jsonStore.updatejson(roomTotalJson[0], socket.room);
+
+                console.log("무력화 해제 성공!");
+
+                // [GameLog] 로그 추가 - 무력화 해제 로그
+                const blackLogJson = JSON.parse(await jsonStore.getjson(socket.room+":blackLog"));
+
+                let today = new Date();   
+                let hours = today.getHours(); // 시
+                let minutes = today.getMinutes();  // 분
+                let seconds = today.getSeconds();  // 초
+                let now = hours+":"+minutes+":"+seconds;
+                var monitoringLog = {time: now, nickname: socket.nickname, targetCompany: company, targetSection: "", actionType: "Neutralization", detail: socket.nickname+"무력화 해제되었습니다."};
+
+                blackLogJson[0].push(monitoringLog);
+                await jsonStore.updatejson(blackLogJson[0], socket.room+":blackLog");
+
+                var logArr = [];
+                logArr.push(monitoringLog);
+                // socket.emit('BlackLog', logArr);
+                // socket.to(socket.room).emit('BlackLog', logArr);
+                io.sockets.in(socket.room+'false').emit('addLog', logArr);
+                console.log("무력화 해제 성공!");          
+
+                gameLogger.info("game:neutralization_success", {
+                server : 'server1',
+                userIP : '192.0.0.1',
+                sessionID : socket.sessionID,
+                userID : socket.userID,
+                nickname : socket.nickname,
+                data : 	{
+                    roomID : socket.roomID,
+                    team : socket.team,
+                    companyName : company,
+                    IsBlocked: roomTotalJson[0].blackTeam.users[socket.userID][company].IsBlocked,
+                    state : 1,
+                    cost : config.UNBLOCK_INFO.pita,
+                    totalPita :roomTotalJson[0].blackTeam.total_pita 
+                },
+            });          
+            }, 10000); // 10초
+
+            
+            roomTotalJson = JSON.parse(await jsonStore.getjson(socket.room));
+            let company_blockedNum = 0;
+
+            for (var userId in roomTotalJson[0]["blackTeam"]["users"]){
+                console.log("[On Monitoring] user id : ", userId);
+                if (roomTotalJson[0]["blackTeam"]["users"][userId][company]["IsBlocked"] == true){
+                    company_blockedNum += 1;
                 }
             }
-        });
 
-        ////////////////////////////////////////////////////////////////////////////////////
-        // PlayerEnter
-        // socket.on('PlayerEnter', function() {
-        //     console.log("Players >> ");
-        //     const rand_Color = Math.floor(Math.random() * 12);
-        //     // eval("Players.player" + numPlayer + " = playerInfo")
-        //     let playerOrder = "player" + numPlayer;
-        //     let playerInfo = {playerOrder: playerOrder, socket: socket.id, nickname: socket.nickname, readyStatus: false, teamStatus: false, team: evenNumPlayer, color: rand_Color};
-        //     Players.push(playerInfo);
-        //     gamePlayer.player = Players;
-        //     // Players[Players.length]=playerInfo;
-        //     console.log("PlayersInfo", numPlayer, " >> ", playerInfo);
-        //     console.log("Players >> ", Players);
-        //     console.log("gamePlayer >> ", gamePlayer);
-
-        //     if (evenNumPlayer == false){
-        //         evenNumPlayer = true;
-        //     } else {
-        //         evenNumPlayer = false;
-        //     }
-
-        //     numPlayer = numPlayer + 1;
-            
-        //     // JSON 형식으로 유니티에 데이터 보내기
-
-        //     var PlayersJson = JSON.stringify(gamePlayer);
-        //     console.log("jsonStringify : ", PlayersJson.toString());
-        //     socket.emit('PlayersData', PlayersJson);
-        // });
+            console.log("[On Monitoring] company_blockedNum : ", company_blockedNum);
         
-        // socket.on('changeStatus', function(jsonStr) {
-        //     let changePlayerInfo = JSON.parse(jsonStr);        
+            socket.to(socket.room+'true').emit("Blocked Num", company_blockedNum);
+            socket.emit('Blocked Num', company_blockedNum);
+        
+        });
+        
     
-        //     console.log('new Player info Jsong string : ', jsonStr);
-        //     console.log('new Player info gamePlayer : ', changePlayerInfo);
-
-        //     let playerNum = changePlayerInfo["playerNum"];
-        //     let ready = (changePlayerInfo["readyStatus"] == 'True') ? true : false;
-        //     let teamChange = (changePlayerInfo["teamStatus"] == 'True') ? true : false;
-
-        //     gamePlayer.player[playerNum]["readyStatus"] = ready;
-        //     gamePlayer.player[playerNum]["teamStatus"] = teamChange;
-
-        //     console.log("new josn file : ", gamePlayer);
-
-        //     var PlayersJson = JSON.stringify(gamePlayer);
-        //     console.log("jsonStringify : ", PlayersJson.toString());
-        //     socket.emit('PlayersData', PlayersJson);
-        // });
-
-        // socket.on('changeColor', function(jsonStr) {
-        //     let changePlayerInfo = JSON.parse(jsonStr);
-
-        //     console.log('new Player info Jsong string : ', jsonStr);
-        //     console.log('new Player info gamePlayer : ', changePlayerInfo);
-
-        //     let playerNum = changePlayerInfo["playerNum"];
-        //     let colorNum = changePlayerInfo["value"];
-
-        //     gamePlayer.player[playerNum]["color"] = colorNum;
-
-        //     console.log("new josn file : ", gamePlayer);
-
-        //     var PlayersJson = JSON.stringify(gamePlayer);
-        //     console.log("jsonStringify : ", PlayersJson.toString());
-        //     socket.emit('PlayersData', PlayersJson);
-        // });
-
-
         ////////////////////////////////////////////////////////////////////////////////////
         // 회사 선택 후 사용자들에게 위치 알리기
         socket.on("Select Company", async(CompanyName) => {

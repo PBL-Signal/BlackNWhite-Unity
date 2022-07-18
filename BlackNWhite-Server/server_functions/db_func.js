@@ -1,54 +1,54 @@
-// const mongoose = require('mongoose');
-// const Room = require("../schemas/room");
-// const AttackList = require("../schemas/attackList");
-// const Section = require("../schemas/section");
+const mongoose = require('mongoose');
+const express = require("express");
+
+const RoomTotalSchema = require("../schemas/roomTotal/RoomTotalSchema");
+const RoomInfoTotal = require("../schemas/roomTotal/RoomInfoTotal");
 
 
-// const express = require("express");
-// const { find } = require('../schemas/room');
-// //===== Mongo DB ====
-// //MongoDB 연결
-// mongoose.connect('mongodb://localhost:27017/blacknWhite'); // 포트번호 뒤에 nodejs는 사용할 DB 이름 (현재는 nodejs DB를 사용)
-// var db = mongoose.connection;
+//===== Mongo DB ====
+//MongoDB 연결
+mongoose.connect('mongodb://localhost:27017/blacknWhite'); // 포트번호 뒤에 nodejs는 사용할 DB 이름 (현재는 nodejs DB를 사용)
+var db = mongoose.connection;
 
-// // 연결 실패
-// db.on('error', function(){
-//     console.log('Connection Failed!');
-// });
-// // 연결 성공
-// db.once('open', function() {
-//     console.log('DB Connected!');
-// });
+// 연결 실패
+db.on('error', function(){
+    console.log('Connection Failed!');
+});
+// 연결 성공
+db.once('open', function() {
+    console.log('DB Connected!');
+});
 
 // //==============================================================================
-// func = express();
+func = express();
 
-// // 테스트를 위한 하드코딩
-// const RoomTotalSchema = require("../schemas/roomTotal/RoomTotalSchema");
-// func.InsertGameJson = function(roomData){
-//     console.log('InsertRoomTotal 함수 호출');
+func.InsertGameRoomTotal = function(gameData){
+    console.log('InsertGameRoomTotal 함수 호출');
 
-//     var newRoom = new RoomTotalSchema(roomData);
-//     newRoom.save(function(error, data){
-//         if(error){
-//             console.log(error);
-//         }else{
-//             console.log('New Room Total Saved!');
+    var newRoom = new RoomTotalSchema(gameData);
+    newRoom.save(function(error, data){
+        if(error){
+            console.log(error);
+        }else{
+            console.log('New Game Data Saved!');
+        }
+    });
+}
 
-//             // return new Promise((resolve)=>{
-//             //     RoomTotalSchema.find({roomPin: roomData.roomPin}, function(error, roomTotalInfo){
-//             //         console.log('--- Read Room Total Info ---');
-//             //         if(error){
-//             //             console.log(error);
-//             //         }else{
-//             //             console.log("roomTotalInfo load result : ", roomTotalInfo);
-//             //             resolve(roomTotalInfo);
-//             //         }
-//             //     });
-//             // });
-//         }
-//     });
-// }
+func.InsertRoomInfoTotal = function(roomData){
+    console.log('InsertRoomInfoTotal 함수 호출');
+
+    var newRoom = new RoomInfoTotal(roomData);
+    newRoom.save(function(error, data){
+        if(error){
+            console.log(error);
+        }else{
+            console.log('New Room Data Saved!');
+        }
+    });
+}
+
+module.exports = func;
 
 // // attack List 상태 불러오기
 // func.loadRoomTotalInfo = function(roomPin){
@@ -281,4 +281,4 @@
 //     });
 // }
 
-// // module.exports = func;
+

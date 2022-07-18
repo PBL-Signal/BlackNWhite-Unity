@@ -182,6 +182,7 @@
     RoomInfo(roomid, info_json){ //업데이트 저장 다 포함
         this.redisClient.hset(`room:${roomid}`, "Info", JSON.stringify(info_json));
     }
+    
     //Info불러오는 함수
     async getRoomInfo(roomid){
         return await this.redisClient.hmget(`room:${roomid}`, "Info");

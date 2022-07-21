@@ -3551,7 +3551,6 @@ module.exports = (io) => {
                 console.log("Math.max(...responseList) ; ", Math.max(...responseProgress));
                 if (responseList.length == 0){
                     step = 0;
-                    roomTotalJson[0][responseJson.companyName]["sections"][responseJson.sectionIndex]["destroyStatus"] = false;
                 } else {
                     let maxAttack = Math.max(...responseProgress);
                     if (0 <= maxAttack && maxAttack < 4){
@@ -3567,6 +3566,10 @@ module.exports = (io) => {
                     } else if (11 <= maxAttack && maxAttack <= 12){
                         step = 6;
                     }
+                }
+
+                if(step<6){
+                    roomTotalJson[0][responseJson.companyName]["sections"][responseJson.sectionIndex]["destroyStatus"] = false;
                 }
 
                 socket.to(socket.room+'true').emit('Load Response List', responseJson.companyName, responseJson.sectionIndex, responseProgress, step - 1);
@@ -3623,6 +3626,7 @@ module.exports = (io) => {
                 roomTotalJson = JSON.parse(await jsonStore.getjson(socket.room));                
 
                 console.log("attack step after edit json (attackCount) : ", roomTotalJson[0][responseJson.companyName]["sections"][responseJson.sectionIndex]["attackStep"]);
+                console.log("Section Destory Status : ", roomTotalJson[0][responseJson.companyName]["sections"][responseJson.sectionIndex]["destroyStatus"]);
 
                 // [GameLog] 로그 추가 - 대응 로그
                 const whiteLogJson = JSON.parse(await jsonStore.getjson(socket.room+":whiteLog"));
@@ -3642,6 +3646,7 @@ module.exports = (io) => {
                 var logArr = [];
                 logArr.push(monitoringLog);
                 io.sockets.in(socket.room+'true').emit('addLog', logArr);
+                io.sockets.in(socket.room).emit('updateSectionState');
 
                 // 대응 성공
                 gameLogger.info("game:response success", {

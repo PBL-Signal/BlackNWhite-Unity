@@ -3007,7 +3007,6 @@ module.exports = (io) => {
                     console.log("[Section Activation List] activationList : ", activationList);
     
                     socket.to(socket.room+'true').emit("Section Activation List", attackJson.companyName, activationList);
-                    socket.emit("Section Activation List", attackJson.companyName, activationList);
                 }
     
                 socket.to(socket.room+'false').emit("Attack Step", attackJson.companyName, attackJson.sectionIndex, step);

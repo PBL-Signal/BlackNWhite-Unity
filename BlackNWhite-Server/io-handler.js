@@ -3704,6 +3704,8 @@ module.exports = (io) => {
 
                 if(step<6){
                     roomTotalJson[0][responseJson.companyName]["sections"][responseJson.sectionIndex]["destroyStatus"] = false;
+                    await jsonStore.updatejson(roomTotalJson[0], socket.room);
+                    roomTotalJson = JSON.parse(await jsonStore.getjson(socket.room));  
                 }
 
                 socket.to(socket.room+'true').emit('Load Response List', responseJson.companyName, responseJson.sectionIndex, responseProgress, step - 1);
@@ -3780,7 +3782,7 @@ module.exports = (io) => {
                 var logArr = [];
                 logArr.push(monitoringLog);
                 io.sockets.in(socket.room+'true').emit('addLog', logArr);
-                io.sockets.in(socket.room).emit('updateSectionState', responseJson.companyName);
+                io.sockets.in(socket.room).emit('updateSectionState', responseJson.companyName, responseJson.sectionIndex);
 
                 // 대응 성공
                 gameLogger.info("game:response success", {

@@ -50,6 +50,11 @@ func.InsertRoomInfoTotal = function(roomData){
 
 module.exports = func;
 
+
+
+
+
+
 // // attack List 상태 불러오기
 // func.loadRoomTotalInfo = function(roomPin){
 //     console.log('[db_func] loadRoomTotalInfo 함수 호출, settings : ', roomPin);

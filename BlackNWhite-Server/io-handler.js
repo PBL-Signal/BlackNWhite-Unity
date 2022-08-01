@@ -42,9 +42,10 @@ const RoomInfo = require("./schemas/roomTotal/RoomInfo");
 
 // MongoDB관련
 const func = require('./server_functions/db_func');
-const {lobbyLogger, gameLogger} = require('./logConfig'); 
+const {lobbyLogger, gameLogger, chattingLogger} = require('./logConfig'); 
 
 const os = require( 'os' );
+const { emit } = require('process');
 var networkInterfaces = os.networkInterfaces( );
 var server_ip = networkInterfaces['Wi-Fi'][1].address;
 
@@ -956,6 +957,7 @@ module.exports = (io) => {
                
             // 게임 관련 Json 생성 (new)
             var roomTotalJson = InitGame(socket.room, blackUsersInfo, whiteUsersInfo);
+
             
             // monitoringLog 생성
             var monitoringLog = [];
@@ -1973,6 +1975,35 @@ module.exports = (io) => {
         
             socket.to(socket.room+'true').emit("Blocked Num", company_blockedNum);
             socket.emit('Blocked Num', company_blockedNum);
+        })
+
+        socket.on("Send Chat", async(chat) => {
+            console.log("[send chat] chatting : ", chat);
+
+            let now_time = new Date();   
+            let hours = now_time.getHours();
+            let minutes = now_time.getMinutes();
+            let timestamp = hours+":"+minutes;
+
+            console.log("socket.color : ", socket.color);
+            console.log("socket.color type : ", typeof(socket.color));
+
+            socket.to(socket.room+socket.team).emit("Update Chat", timestamp, socket.nickname, socket.color, chat);
+            socket.emit("Update Chat", timestamp, socket.nickname, socket.color, chat);
+
+            chattingLogger.error('game:chatting', {
+                server : server_ip,
+                userIP : '192.0.0.1',
+                sessionID : socket.sessionID,
+                userID : socket.userID,
+                nickname : socket.nickname,
+                data : {
+                    roomID : socket.roomID,
+                    room : socket.room,
+                    team : socket.team,
+                    chatting : chat
+                } 
+            });
         })
 
 

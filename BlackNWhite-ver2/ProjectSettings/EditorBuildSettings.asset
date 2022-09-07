@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/SampleScene.unity
+    guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/StartMain.unity
+    guid: 83fa5d20c2de29a47a626ed8076215bf
+  - enabled: 1
+    path: Assets/Scenes/CreateRoom.unity
+    guid: e53a01ff305de1a43ab6ee684d097b84
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyAView_Black.unity
+    guid: 6cdae1da68c57e34d9cef6d876501e10
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyAView_White.unity
+    guid: b391232fc1007674cbe2f43fdee5b14f
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyBView_Black.unity
+    guid: 28e6039dff58536449df0d1d0024952e
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyBView_White.unity
+    guid: 238862c25e9427947a06dd06796b028d
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyCView_Black.unity
+    guid: 4e3939a3b5db1304ebd71d3001526024
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyCView_White.unity
+    guid: be1d4374f4b5b5443860297cd479e124
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyDView_Black.unity
+    guid: 0c01a304ae5b1d74eaa38bcc84281c70
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyDView_White.unity
+    guid: 1c66cc30441ecf54abeedf1329e879e7
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyEView_Black.unity
+    guid: 5a6ba0724abfa8a45b67f99d65da159b
+  - enabled: 1
+    path: Assets/Scenes/Monitoring.unity
+    guid: c58a6848bda180b468bf6d79cc29ffb4
+  - enabled: 1
+    path: Assets/Scenes/Neutralization.unity
+    guid: f75d66c89725d6d4bbd37a3b46bbde17
+  - enabled: 1
+    path: Assets/Scenes/ResultPage.unity
+    guid: 1c228f68a0f001042bfd59da7dfed365
+  - enabled: 1
+    path: Assets/Scenes/roomLists.unity
+    guid: b952918a65616b645816421589f45b27
+  - enabled: 1
+    path: Assets/Scenes/socket-io-test.unity
+    guid: 6e2cb0db398e3f64884fb9503c721b5c
+  - enabled: 1
+    path: Assets/Scenes/ActionBar.unity
+    guid: 31218a5ac6b38cf44bc475130d49975a
+  - enabled: 1
+    path: Assets/Scenes/Temp_WGWG.unity
+    guid: 05b2728330a7e1a45af65a2dba1a3139
+  - enabled: 1
+    path: Assets/Scenes/VoiceChat.unity
+    guid: 4612c19be9dea394191ce954608681d7
+  - enabled: 1
+    path: Assets/Scenes/WaitingRoomNew 1.unity
+    guid: e07bec432da4a254b862472076f4c164
+  - enabled: 1
+    path: Assets/Scenes/WaitingRoomNew.unity
+    guid: a1ee58343988f83419a6cacd62680a73
+  - enabled: 1
+    path: Assets/Scenes/DetailCompanyEView_White.unity
+    guid: a84eaf3be1613e54ea93d1644d1c4692
+  - enabled: 1
+    path: Assets/Scenes/MainMapScene_Black.unity
+    guid: 79fb2a784de4f7244b3c6e437f1d0596
+  - enabled: 1
+    path: Assets/Scenes/MainMapScene_White.unity
+    guid: 90840eff2da308e4382932b1b2a9d90e
+  - enabled: 1
+    path: Assets/Scenes/mainHome.unity
+    guid: b6c5db4d31c625644999838aff5f7433
+  m_configObjects: {}

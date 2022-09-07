@@ -1,4 +1,0 @@
-repository "BlackNWhite-ver2@PBL4_BLACKNWHITE@cloud"
-  path "/"
-    br "/main"
-    co "/main"
